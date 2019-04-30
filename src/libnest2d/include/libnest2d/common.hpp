@@ -199,7 +199,7 @@ public:
 };
 
 template <class Coord> struct Epsilon { 
-    static const constexpr Coord Value = std::numeric_limits<Coord>::epsilon();
+    static const /*constexpr*/ Coord Value = std::numeric_limits<Coord>::epsilon();
 };
 
 struct ScalarTag {};

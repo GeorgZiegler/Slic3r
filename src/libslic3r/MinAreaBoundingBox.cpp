@@ -90,7 +90,7 @@ using Rational = boost::rational<boost::multiprecision::int128_t>;
 using Rational = boost::rational<__int128>;
 #endif
 
-MinAreaBoundigBox::MinAreaBoundigBox(const Polygon &p, PolygonClass pc)
+MinAreaBoundigBox::MinAreaBoundigBox(const Polygon &p, PolygonLevel pc)
 {
     const Polygon& chull = pc == pcConvex ? p : libnest2d::sl::convexHull(p);
     
@@ -102,7 +102,7 @@ MinAreaBoundigBox::MinAreaBoundigBox(const Polygon &p, PolygonClass pc)
     m_axis = box.axis();
 }
 
-MinAreaBoundigBox::MinAreaBoundigBox(const ExPolygon &p, PolygonClass pc)
+MinAreaBoundigBox::MinAreaBoundigBox(const ExPolygon &p, PolygonLevel pc)
 {
     const ExPolygon& chull = pc == pcConvex ? p : libnest2d::sl::convexHull(p);
     
@@ -114,7 +114,7 @@ MinAreaBoundigBox::MinAreaBoundigBox(const ExPolygon &p, PolygonClass pc)
     m_axis = box.axis();
 }
 
-MinAreaBoundigBox::MinAreaBoundigBox(const Points &pts, PolygonClass pc)
+MinAreaBoundigBox::MinAreaBoundigBox(const Points &pts, PolygonLevel pc)
 {
     const Points& chull = pc == pcConvex ? pts : libnest2d::sl::convexHull(pts);
     
