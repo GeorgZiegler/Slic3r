@@ -14,11 +14,8 @@
 
 namespace libnest2d {
 
-template<> struct PointType<Slic3r::ExPolygon>   { using Type = Slic3r::Point; };
-template<> struct PointType<Slic3r::Polygon>     { using Type = Slic3r::Point; };
 template<> struct PointType<Slic3r::Points>      { using Type = Slic3r::Point; };
 template<> struct CoordType<Slic3r::Point>       { using Type = coord_t; };
-template<> struct PointType<Slic3r::Point>       { using Type = Slic3r::Point; };
 template<> struct ShapeTag<Slic3r::ExPolygon>    { using Type = PolygonTag; };
 template<> struct ShapeTag<Slic3r::Polygon>      { using Type = PolygonTag; };
 template<> struct ShapeTag<Slic3r::Points>       { using Type = PathTag; };
@@ -52,6 +49,12 @@ template<> inline Slic3r::ExPolygon create<Slic3r::ExPolygon>(Slic3r::Points&& c
     return expoly;
 }
 
+template<> inline Slic3r::Polygon create<Slic3r::Polygon>(Slic3r::Points&& contour)
+{
+    Slic3r::Polygon poly; poly.points.swap(contour);
+    return poly;
+}
+
 template<> Slic3r::Points convexHull(const Slic3r::Points& pts, const PathTag&) 
 {
     Slic3r::Points hull;
@@ -82,6 +85,7 @@ template<> Slic3r::Points convexHull(const Slic3r::Points& pts, const PathTag&)
 
 namespace Slic3r {
 
+// Used as compute type.
 using Unit = int64_t;
 
 #ifndef HAS_INTRINSIC_128_TYPE
@@ -136,17 +140,17 @@ double MinAreaBoundigBox::angle_to_X() const
 
 long double MinAreaBoundigBox::width() const
 {
-    return std::abs(m_bottom) / std::sqrt(libnest2d::magnsq<Point, long double>(m_axis));
+    return std::abs(m_bottom) / std::sqrt(libnest2d::pl::magnsq<Point, long double>(m_axis));
 }
 
 long double MinAreaBoundigBox::height() const
 {
-    return std::abs(m_right) / std::sqrt(libnest2d::magnsq<Point, long double>(m_axis));
+    return std::abs(m_right) / std::sqrt(libnest2d::pl::magnsq<Point, long double>(m_axis));
 }
 
 long double MinAreaBoundigBox::area() const
 {
-    long double asq = libnest2d::magnsq<Point, long double>(m_axis);
+    long double asq = libnest2d::pl::magnsq<Point, long double>(m_axis);
     return m_bottom * m_right / asq;   
 }
 
