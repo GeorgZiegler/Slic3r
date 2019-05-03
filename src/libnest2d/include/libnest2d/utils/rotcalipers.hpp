@@ -2,10 +2,10 @@
 #define ROTCALIPERS_HPP
 
 #include <numeric>
-#include <cmath>
 
 #include <libnest2d/geometry_traits.hpp>
 
+#include <cmath>
 
 namespace libnest2d {
 
@@ -20,7 +20,7 @@ public:
     
     inline long double area() const { 
         long double asq = pl::magnsq<Pt, long double>(axis_);
-        return bottom_ * right_ / asq;
+        return cast<long double>(bottom_ * right_) / asq;
     }
     
     inline long double width() const { 
@@ -68,7 +68,7 @@ Poly removeCollinearPoints(const Poly& sh, Unit eps = Unit(0))
 }
 
 // The area of the bounding rectangle with the axis dir and support vertices
-template<class Pt, class Unit = TCompute<Pt>, class R = Unit> 
+template<class Pt, class Unit = TCompute<Pt>, class R = TCompute<Pt>> 
 inline R rectarea(const Pt& w, // the axis
                   const Pt& vb, const Pt& vr, 
                   const Pt& vt, const Pt& vl) 
@@ -80,20 +80,37 @@ inline R rectarea(const Pt& w, // the axis
     return m;
 };
 
+template<class Pt> 
+inline long double frectarea(const Pt& w, // the axis
+                        const Pt& vb, const Pt& vr, 
+                        const Pt& vt, const Pt& vl) 
+{
+    long double a = pl::dot<Pt, long double>(w, vr - vl); 
+    long double b = pl::dot<Pt, long double>(-perp(w), vt - vb);
+    long double d = a / pl::magnsq<Pt, long double>(w);
+    return d * b;
+};
+
 template<class Pt, 
          class Unit = TCompute<Pt>,
-         class R = Unit,
+         class R = TCompute<Pt>,
          class It = typename std::vector<Pt>::const_iterator>
 inline R rectarea(const Pt& w, const std::array<It, 4>& rect)
 {
     return rectarea<Pt, Unit, R>(w, *rect[0], *rect[1], *rect[2], *rect[3]);
 }
 
+template<class Pt, class It = typename std::vector<Pt>::const_iterator> 
+inline long double frectarea(const Pt& w, const std::array<It, 4>& rect) 
+{
+    return frectarea(w, *rect[0], *rect[1], *rect[2], *rect[3]);
+};
+
 // This function is only applicable to counter-clockwise oriented convex
 // polygons where only two points can be collinear witch each other.
 template <class RawShape, 
           class Unit = TCompute<RawShape>, 
-          class Ratio = Unit> 
+          class Ratio = TCompute<RawShape>> 
 RotatedBox<TPoint<RawShape>, Unit> minAreaBoundingBox(const RawShape& sh) 
 {
     using Point = TPoint<RawShape>;

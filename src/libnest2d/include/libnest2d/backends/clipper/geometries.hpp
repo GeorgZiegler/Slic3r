@@ -20,13 +20,13 @@ using PathImpl  = ClipperLib::Path;
 using HoleStore = ClipperLib::Paths;
 using PolygonImpl = ClipperLib::Polygon;
 
+template<> struct ShapeTag<PolygonImpl> { using Type = PolygonTag; };
+template<> struct ShapeTag<PathImpl>    { using Type = PathTag; };
+template<> struct ShapeTag<PointImpl>   { using Type = PointTag; };
+
 // Type of coordinate units used by Clipper
 template<> struct CoordType<PointImpl> {
     using Type = ClipperLib::cInt;
-};
-
-template<> struct ComputeType<ClipperLib::cInt> {
-    using Type = __int128;
 };
 
 template<> struct PointType<PathImpl> {
@@ -37,17 +37,11 @@ template<> struct ContourType<PolygonImpl> {
     using Type = PathImpl;
 };
 
-template<> struct ShapeTag<PolygonImpl> { using Type = PolygonTag; };
-template<> struct ShapeTag<PathImpl> { using Type = PathTag; };
-template<> struct ShapeTag<PointImpl> { using Type = PointTag; };
-
-template<> struct ShapeTag<TMultiShape<PolygonImpl>> {
-    using Type = MultiPolygonTag;
+template<> struct ComputeType<ClipperLib::cInt> {
+    using Type = int64_t;
 };
 
-template<> struct PointType<TMultiShape<PolygonImpl>> {
-    using Type = PointImpl;
-};
+
 
 template<> struct HolesContainer<PolygonImpl> {
     using Type = ClipperLib::Paths;
@@ -81,38 +75,39 @@ template<> inline TCoord<PointImpl>& y(PointImpl& p)
 
 }
 
+// Using the libnest2d default area implementation
 #define DISABLE_BOOST_AREA
 
-namespace _smartarea {
+//namespace _smartarea {
 
-template<Orientation o>
-inline double area(const PolygonImpl& /*sh*/) {
-    return std::nan("");
-}
+//template<Orientation o>
+//inline double area(const PolygonImpl& /*sh*/) {
+//    return std::nan("");
+//}
 
-template<>
-inline double area<Orientation::COUNTER_CLOCKWISE>(const PolygonImpl& sh) {
-    return std::accumulate(sh.Holes.begin(), sh.Holes.end(),
-                           ClipperLib::Area(sh.Contour),
-                           [](double a, const ClipperLib::Path& pt){
-        return a + ClipperLib::Area(pt);
-    });
-}
+//template<>
+//inline double area<Orientation::COUNTER_CLOCKWISE>(const PolygonImpl& sh) {
+//    return std::accumulate(sh.Holes.begin(), sh.Holes.end(),
+//                           ClipperLib::Area(sh.Contour),
+//                           [](double a, const ClipperLib::Path& pt){
+//        return a + ClipperLib::Area(pt);
+//    });
+//}
 
-template<>
-inline double area<Orientation::CLOCKWISE>(const PolygonImpl& sh) {
-    return -area<Orientation::COUNTER_CLOCKWISE>(sh);
-}
+//template<>
+//inline double area<Orientation::CLOCKWISE>(const PolygonImpl& sh) {
+//    return -area<Orientation::COUNTER_CLOCKWISE>(sh);
+//}
 
-}
+//}
 
 namespace shapelike {
 
-// Tell libnest2d how to make string out of a ClipperPolygon object
-template<> inline double area(const PolygonImpl& sh, const PolygonTag&)
-{
-    return _smartarea::area<OrientationType<PolygonImpl>::Value>(sh);
-}
+//// Tell libnest2d how to make string out of a ClipperPolygon object
+//template<> inline double area(const PolygonImpl& sh, const PolygonTag&)
+//{
+//    return _smartarea::area<OrientationType<PolygonImpl>::Value>(sh);
+//}
 
 template<> inline void offset(PolygonImpl& sh, TCoord<PointImpl> distance)
 {
@@ -207,6 +202,7 @@ inline PolygonImpl create(const PathImpl& path, const HoleStore& holes)
 //    }
 
     p.Holes = holes;
+    
 //    for(auto& h : p.Holes) {
 //        if(!ClipperLib::Orientation(h)) {
 //            ClipperLib::ReversePath(h);
@@ -371,8 +367,8 @@ inline std::vector<PolygonImpl> clipper_execute(
 
 namespace nfp {
 
-template<> inline std::vector<PolygonImpl>
-merge(const std::vector<PolygonImpl>& shapes)
+template<> inline TMultiShape<PolygonImpl>
+merge(const TMultiShape<PolygonImpl>& shapes)
 {
     ClipperLib::Clipper clipper(ClipperLib::ioReverseSolution);
 

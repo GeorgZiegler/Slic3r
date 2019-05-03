@@ -5,7 +5,7 @@
 
 #include <libslic3r/Int128.hpp>
 
-#ifndef HAS_INTRINSIC_128_TYPE
+#if !defined(HAS_INTRINSIC_128_TYPE) || defined(__APPLE__)
 #include <boost/multiprecision/integer.hpp>
 #endif
 
@@ -88,7 +88,7 @@ namespace Slic3r {
 // Used as compute type.
 using Unit = int64_t;
 
-#ifndef HAS_INTRINSIC_128_TYPE
+#if !defined(HAS_INTRINSIC_128_TYPE) || defined(__APPLE__)
 using Rational = boost::rational<boost::multiprecision::int128_t>;
 #else
 using Rational = boost::rational<__int128>;
